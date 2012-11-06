@@ -10,3 +10,8 @@ is possible to use because the elements values are
 bounded within the priority queue's capacity.
 However this implemention achived 𝓞(n³) by not using
 a priority queue.
+
+Edmonds and Karp, and ndependently Tomizawa, has also
+reduced the time complexity to 𝓞(n³), but I do not
+known how.
+
