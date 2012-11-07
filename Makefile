@@ -1,5 +1,5 @@
 all:
-	gcc -g -o "hungarian"{,.c}
+	gcc -o "hungarian"{,.c}
 
 test:
 	./"hungarian"
