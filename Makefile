@@ -1,5 +1,5 @@
 all:
-	gcc -o "hungarian"{,.c}
+	gcc -g -o "hungarian"{,.c}
 
 nodebug:
 	gcc -o "hungarian"{,.c}
