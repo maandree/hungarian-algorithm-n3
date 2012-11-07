@@ -185,7 +185,15 @@ int main(int argc, char** argv)
     
     cell sum = 0;
     for (i = 0; i < n; i++)
+    {
         sum += *(*(t + *(*(assignment + i) + 0)) + *(*(assignment + i) + 1));
+	free(*(assignment + i));
+	free(*(table + i));
+	free(*(t + i));
+    }
+    free(assignment);
+    free(table);
+    free(t);
     printf("\n\nSum: %li\n\n", sum);
 
     return 0;
@@ -216,7 +224,11 @@ void print(cell** t, long n, long m, long** assignment)
 	    printf("%5li%s\e[m   ", (cell)(*(*(t + i) + j)), (*(*(assigned + i) + j) ? "^" : " "));
         }
 	printf("\n\n");
+	
+	free(*(assigned + i));
     }
+    
+    free(assigned);
 }
 
 
@@ -276,13 +288,27 @@ long** kuhn_match(cell** table, long n, long m)
 		}
 		for (i = n; i < m; i++)
 		    *(colCovered + i) = false;
+		free(prime);
 		break;
 	    }
 	    kuhn_addAndSubtract(table, rowCovered, colCovered, n, m);
 	}
     }
     
-    return kuhn_assign(marks, n, m);
+    free(rowCovered);
+    free(colCovered);
+    free(altRow);
+    free(altCol);
+    free(rowPrimes);
+    free(colMarks);
+    
+    long** rc = kuhn_assign(marks, n, m);
+    
+    for (i = 0; i < n; i++)
+        free(*(marks + i));
+    free(marks);
+    
+    return rc;
 }
 
 
@@ -355,6 +381,8 @@ byte** kuhn_mark(cell** t, long n, long m)
 		*(colCovered + j) = true;
 	    }
     
+    free(rowCovered);
+    free(colCovered);
     return marks;
 }
 
@@ -418,7 +446,13 @@ long* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCo
     {
         p = BitSet_any(zeroes);
 	if (p < 0)
+	{
+	    free(zeroes.limbs);
+	    free(zeroes.first);
+	    free(zeroes.next);
+	    free(zeroes.prev);
 	    return null;
+	}
 
 	row = p / m;
 	col = p % m;
@@ -466,6 +500,10 @@ long* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCo
 	    long* rc = new_longs(2);
 	    *rc = row;
 	    *(rc + 1) = col;
+	    free(zeroes.limbs);
+	    free(zeroes.first);
+	    free(zeroes.next);
+	    free(zeroes.prev);
 	    return rc;
 	}
     }
