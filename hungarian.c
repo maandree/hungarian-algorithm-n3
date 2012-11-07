@@ -226,7 +226,7 @@ void print(cell** t, long n, long m, long** assignment)
  * 
  * @param   table  The table in which to perform the matching
  * @param   n      The height of the table
- * @param   h      The width of the table
+ * @param   m      The width of the table
  * @return         The optimal assignment, an array of row–coloumn pairs
  */
 long** kuhn_match(cell** table, long n, long m)
