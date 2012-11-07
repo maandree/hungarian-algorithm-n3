@@ -93,22 +93,22 @@ typedef struct
      * The set of all limbs, a limb consist of 64 bits
      */
     cell* limbs;
-
+    
     /**
      * Singleton array with the index of the first non-zero limb
      */
     long* first;
-
+    
     /**
-     * Array the the index of the previous non-zero limb for echo limb
+     * Array the the index of the previous non-zero limb for each limb
      */
     long* prev;
-
+    
     /**
-     * Array the the index of the next non-zero limb for echo limb
+     * Array the the index of the next non-zero limb for each limb
      */
     long* next;
-
+    
 } BitSet;
 
 
@@ -139,8 +139,8 @@ int main(int argc, char** argv)
     asm("cpuid");
     asm volatile("rdtsc" : "=a" (a), "=d" (d));
     srand(((llong)a) | (((llong)d) << 32LL));
-
-  
+    
+    
     long n = 10, m = 15;
     
     long i;
@@ -174,8 +174,6 @@ int main(int argc, char** argv)
 	}
     }
     
-    //kuhn_match(table, n, m);
-    
     printf("\nInput:\n\n");
     print(t, n, m, null);
     
@@ -195,14 +193,14 @@ int main(int argc, char** argv)
     free(table);
     free(t);
     printf("\n\nSum: %li\n\n", sum);
-
+    
     return 0;
 }
 
 void print(cell** t, long n, long m, long** assignment)
 {
     long i, j;
-
+    
     long** assigned = new_arrays(n);
     for (i = 0; i < n; i++)
     {
@@ -213,7 +211,7 @@ void print(cell** t, long n, long m, long** assignment)
     if (assignment != null)
         for (i = 0; i < n; i++)
 	    (*(*(assigned + **(assignment + i)) + *(*(assignment + i) + 1)))++;
-        
+    
     for (i = 0; i < n; i++)
     {
 	printf("    ");
@@ -236,11 +234,11 @@ void print(cell** t, long n, long m, long** assignment)
 /**
  * Calculates an optimal bipartite minimum weight matching using an
  * O(n³)-time implementation of The Hungarian Algorithm, also known
- * as Kuhn's Algorithm. This implemention is restricted to square
- * tables.
+ * as Kuhn's Algorithm.
  * 
  * @param   table  The table in which to perform the matching
- * @param   n      The dimension of the table
+ * @param   n      The height of the table
+ * @param   h      The width of the table
  * @return         The optimal assignment, an array of row–coloumn pairs
  */
 long** kuhn_match(cell** table, long n, long m)
@@ -251,7 +249,7 @@ long** kuhn_match(cell** table, long n, long m)
     
     kuhn_reduceRows(table, n, m);
     byte** marks = kuhn_mark(table, n, m);
-
+    
     boolean* rowCovered = new_booleans(n);
     boolean* colCovered = new_booleans(m);
     for (i = 0; i < n; i++)
@@ -261,13 +259,13 @@ long** kuhn_match(cell** table, long n, long m)
     }
     for (i = n; i < m; i++)
         *(colCovered + i) = false;
-
+    
     long* altRow = new_longs(n * m);
     long* altCol = new_longs(n * m);
     
     long* rowPrimes = new_longs(n);
     long* colMarks  = new_longs(m);
-
+    
     long* prime;
     
     for (;;)
@@ -333,7 +331,7 @@ void kuhn_reduceRows(cell** t, long n, long m)
 	for (j = 1; j < m; j++)
 	    if (min > *(ti + j))
 	        min = *(ti + j);
-
+	
 	for (j = 0; j < m; j++)
 	    *(ti + j) -= min;
     }
@@ -361,7 +359,7 @@ byte** kuhn_mark(cell** t, long n, long m)
         for (j = 0; j < m; j++)
  	    *(marksi + j) = UNMARKED;
     }
-
+    
     boolean* rowCovered = new_booleans(n);
     boolean* colCovered = new_booleans(m);
     for (i = 0; i < n; i++)
@@ -412,7 +410,7 @@ boolean kuhn_isDone(byte** marks, boolean* colCovered, long n, long m)
     for (j = 0; j < m; j++)
         if (*(colCovered + j))
 	    count++;
-        
+    
     return count == n;
 }
 
@@ -431,7 +429,7 @@ boolean kuhn_isDone(byte** marks, boolean* colCovered, long n, long m)
 long* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCovered, long n, long m)
 {
     long i, j;
-    BitSet zeroes = new_BitSet(n * n);
+    BitSet zeroes = new_BitSet(n * m);
     
     for (i = 0; i < n; i++)
         if (!*(rowCovered + i))
@@ -446,14 +444,14 @@ long* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCo
     {
         p = BitSet_any(zeroes);
 	if (p < 0)
-	{
+        {
 	    free(zeroes.limbs);
 	    free(zeroes.first);
 	    free(zeroes.next);
 	    free(zeroes.prev);
 	    return null;
 	}
-
+	
 	row = p / m;
 	col = p % m;
 	
@@ -466,12 +464,12 @@ long* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCo
 		markInRow = true;
 		col = j;
 	    }
-            
+	
 	if (markInRow)
 	{
 	    *(rowCovered + row) = true;
 	    *(colCovered + col) = false;
-                
+	    
 	    for (i = 0; i < n; i++)
 	        if ((*(*(t + i) + col) == 0) && (row != i))
 		{
@@ -480,7 +478,7 @@ long* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCo
 		    else
 		        BitSet_unset(zeroes, i * m + col);
 		}
-                
+	    
 	    for (j = 0; j < m; j++)
 	        if ((*(*(t + row) + j) == 0) && (col != j))
 		{
@@ -489,7 +487,7 @@ long* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCo
 		    else
 		        BitSet_unset(zeroes, row * m + j);
 		}
-                
+	    
 	    if ((!*(rowCovered + row)) && (!*(colCovered + col)))
 	        BitSet_set(zeroes, row * m + col);
 	    else
@@ -535,7 +533,7 @@ void kuhn_altMarks(byte** marks, long* altRow, long* altCol, long* colMarks, lon
     }
     for (i = n; i < m; i++)
         *(colMarks + i) = -1;
-        
+    
     for (i = 0; i < n; i++)
         for (j = 0; j < m; j++)
 	    if (*(*(marks + i) + j) == MARKED)
@@ -560,7 +558,7 @@ void kuhn_altMarks(byte** marks, long* altRow, long* altCol, long* colMarks, lon
 	*(altRow + index) = *(altRow + index - 1);
 	*(altCol + index) = col;
     }
-        
+    
     byte* markx;
     for (i = 0; i <= index; i++)
     {
@@ -625,7 +623,7 @@ void kuhn_addAndSubtract(cell** t, boolean* rowCovered, boolean* colCovered, lon
 long** kuhn_assign(byte** marks, long n, long m)
 {
     long** assignment = new_arrays(n);
-
+    
     long i, j;
     for (i = 0; i < n; i++)
     {
@@ -637,7 +635,7 @@ long** kuhn_assign(byte** marks, long n, long m)
 		*(*(assignment + i) + 1) = j;
 	    }
     }
-
+    
     return assignment;
 }
 
@@ -682,9 +680,9 @@ void BitSet_set(BitSet this, long i)
 {
     long j = i >> 6L;
     llong old = *(this.limbs + j);
-
+    
     *(this.limbs + j) |= 1LL << (llong)(i & 63L);
-
+    
     if ((!*(this.limbs + j)) ^ (!old))
     {
         j++;
@@ -707,7 +705,7 @@ void BitSet_unset(BitSet this, long i)
     llong old = *(this.limbs + j);
     
     *(this.limbs + j) &= ~(1LL << (llong)(i & 63L));
-  
+    
     if ((!*(this.limbs + j)) ^ (!old))
     {
 	j++;
@@ -716,7 +714,7 @@ void BitSet_unset(BitSet this, long i)
 	*(this.prev + n) = p;
 	*(this.next + p) = n;
 	if (*(this.first) == j)
-	    *(this.first) = *(this.next + j);
+	    *(this.first) = n;
     }
 }
 
@@ -730,7 +728,7 @@ long BitSet_any(BitSet this)
 {
     if (*(this.first) == 0L)
         return -1;
-            
+    
     long i = *(this.first) - 1L;
     return lb(*(this.limbs + i) & -*(this.limbs + i)) + (i << 6L);
 }
@@ -746,7 +744,7 @@ long lb(llong value)
 {
     long rc = 0L;
     llong v = value;
-            
+    
     if (v & 0xFFFFFFFF00000000LL)  {  rc |= 32L;  v >>= 32LL;  }
     if (v & 0x00000000FFFF0000LL)  {  rc |= 16L;  v >>= 16LL;  }
     if (v & 0x000000000000FF00LL)  {  rc |=  8L;  v >>=  8LL;  }

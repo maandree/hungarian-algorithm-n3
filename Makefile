@@ -1,11 +1,14 @@
 all:
 	gcc -g -o "hungarian"{,.c}
 
+nodebug:
+	gcc -o "hungarian"{,.c}
+
 test:
 	./"hungarian"
 
 valgrind:
-	valgrind --leak-check=full ./"hungarian"
+	valgrind --tool=memcheck --leak-check=full ./"hungarian"
 
 clean:
 	if [ -f "hungarian" ]; then  unlink "hungarian";  fi
