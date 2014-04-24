@@ -1,7 +1,13 @@
 /hungarian
-
 *~
 \#*\#
-.\#*
+.*
+!.git*
 *.bak
 *.swp
+*.swo
+*.su
+*.o
+*.out
+*.gch
+

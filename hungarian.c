@@ -127,7 +127,7 @@ void BitSet_set(BitSet this, long i);
 void BitSet_unset(BitSet this, long i);
 long BitSet_any(BitSet this);
 
-long lb(llong x);
+long lb(llong x) __attribute__((const));
 
 
 
@@ -136,8 +136,8 @@ void print(cell** t, long n, long m, long** assignment);
 int main(int argc, char** argv)
 {
     unsigned a, d;
-    asm("cpuid");
-    asm volatile("rdtsc" : "=a" (a), "=d" (d));
+    __asm__("cpuid");
+    __asm__ __volatile__("rdtsc" : "=a" (a), "=d" (d));
     srand(((llong)a) | (((llong)d) << 32LL));
     
     
