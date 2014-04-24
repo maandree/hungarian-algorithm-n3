@@ -103,41 +103,41 @@ typedef struct
     /**
      * Singleton array with the index of the first non-zero limb
      */
-    long* first;
+    ssize_t* first;
     
     /**
      * Array the the index of the previous non-zero limb for each limb
      */
-    long* prev;
+    ssize_t* prev;
     
     /**
      * Array the the index of the next non-zero limb for each limb
      */
-    long* next;
+    ssize_t* next;
     
 } BitSet;
 
 
 
-long** kuhn_match(cell** table, long n, long m);
-void kuhn_reduceRows(cell** t, long n, long m);
-byte** kuhn_mark(cell** t, long n, long m);
-boolean kuhn_isDone(byte** marks, boolean* colCovered, long n, long m);
-long* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCovered, long n, long m);
-void kuhn_altMarks(byte** marks, long* altRow, long* altCol, long* colMarks, long* rowPrimes, long* prime, long n, long m);
-void kuhn_addAndSubtract(cell** t, boolean* rowCovered, boolean* colCovered, long n, long m);
-long** kuhn_assign(byte** marks, long n, long m);
+ssize_t** kuhn_match(cell** table, size_t n, size_t m);
+void kuhn_reduceRows(cell** t, size_t n, size_t m);
+byte** kuhn_mark(cell** t, size_t n, size_t m);
+boolean kuhn_isDone(byte** marks, boolean* colCovered, size_t n, size_t m);
+long* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCovered, size_t n, size_t m);
+void kuhn_altMarks(byte** marks, ssize_t* altRow, ssize_t* altCol, ssize_t* colMarks, ssize_t* rowPrimes, ssize_t* prime, size_t n, size_t m);
+void kuhn_addAndSubtract(cell** t, boolean* rowCovered, boolean* colCovered, size_t n, size_t m);
+ssize_t** kuhn_assign(byte** marks, size_t n, size_t m);
 
-BitSet new_BitSet(long size);
-void BitSet_set(BitSet this, long i);
-void BitSet_unset(BitSet this, long i);
-long BitSet_any(BitSet this) __attribute__((pure));
+BitSet new_BitSet(size_t size);
+void BitSet_set(BitSet this, size_t i);
+void BitSet_unset(BitSet this, size_t i);
+ssize_t BitSet_any(BitSet this) __attribute__((pure));
 
-long lb(llong x) __attribute__((const));
+ssize_t lb(llong x) __attribute__((const));
 
 
 
-void print(cell** t, long n, long m, long** assignment);
+void print(cell** t, size_t n, size_t m, long** assignment);
 
 int main(int argc, char** argv __attribute__((unused)))
 {
@@ -148,12 +148,11 @@ int main(int argc, char** argv __attribute__((unused)))
     fclose(urandom);
     
     
-    long n = 10, m = 15;
+    size_t n = 10, m = 15;
     
-    long i;
+    size_t i, j;
     cell** t = new_arrays(n);
     cell** table = new_arrays(n);
-    long j;
     if (argc < 2)
         for (i = 0; i < n; i++)
 	{
@@ -164,9 +163,9 @@ int main(int argc, char** argv __attribute__((unused)))
 	}
     else
     {
-        long x;
-	scanf("%li", &n);
-	scanf("%li", &m);
+        cell x;
+	scanf("%lu", &n);
+	scanf("%lu", &m);
         t = new_arrays(n);
         table = new_arrays(n);
         for (i = 0; i < n; i++)
@@ -184,7 +183,7 @@ int main(int argc, char** argv __attribute__((unused)))
     printf("\nInput:\n\n");
     print(t, n, m, null);
     
-    long** assignment = kuhn_match(table, n, m);
+    ssize_t** assignment = kuhn_match(table, n, m);
     printf("\nOutput:\n\n");
     print(t, n, m, assignment);
     
@@ -204,11 +203,11 @@ int main(int argc, char** argv __attribute__((unused)))
     return 0;
 }
 
-void print(cell** t, long n, long m, long** assignment)
+void print(cell** t, size_t n, size_t m, ssize_t** assignment)
 {
-    long i, j;
+    size_t i, j;
     
-    long** assigned = new_arrays(n);
+    ssize_t** assigned = new_arrays(n);
     for (i = 0; i < n; i++)
     {
         *(assigned + i) = new_longs(m);
@@ -248,9 +247,9 @@ void print(cell** t, long n, long m, long** assignment)
  * @param   m      The width of the table
  * @return         The optimal assignment, an array of row–coloumn pairs
  */
-long** kuhn_match(cell** table, long n, long m)
+ssize_t** kuhn_match(cell** table, size_t n, size_t m)
 {
-    long i;
+    size_t i;
     
     /* not copying table since it will only be used once */
     
@@ -307,7 +306,7 @@ long** kuhn_match(cell** table, long n, long m)
     free(rowPrimes);
     free(colMarks);
     
-    long** rc = kuhn_assign(marks, n, m);
+    ssize_t** rc = kuhn_assign(marks, n, m);
     
     for (i = 0; i < n; i++)
         free(*(marks + i));
@@ -326,9 +325,9 @@ long** kuhn_match(cell** table, long n, long m)
  * @param  n  The table's height
  * @param  m  The table's width
  */
-void kuhn_reduceRows(cell** t, long n, long m)
+void kuhn_reduceRows(cell** t, size_t n, size_t m)
 {
-    long i, j;
+    size_t i, j;
     cell min;
     cell* ti;
     for (i = 0; i < n; i++)
@@ -355,9 +354,9 @@ void kuhn_reduceRows(cell** t, long n, long m)
  * @param   m  The table's width
  * @return     A matrix of markings as described in the summary
  */
-byte** kuhn_mark(cell** t, long n, long m)
+byte** kuhn_mark(cell** t, size_t n, size_t m)
 {
-    long i, j;
+    size_t i, j;
     byte** marks = new_arrays(n);
     byte* marksi;
     for (i = 0; i < n; i++)
@@ -402,9 +401,9 @@ byte** kuhn_mark(cell** t, long n, long m)
  * @param   m           The table's width
  * @return              Whether the marking is complete
  */
-boolean kuhn_isDone(byte** marks, boolean* colCovered, long n, long m)
+boolean kuhn_isDone(byte** marks, boolean* colCovered, size_t n, size_t m)
 {
-    long i, j;
+    size_t i, j;
     for (j = 0; j < m; j++)
         for (i = 0; i < n; i++)
 	    if (*(*(marks + i) + j) == MARKED)
@@ -413,7 +412,7 @@ boolean kuhn_isDone(byte** marks, boolean* colCovered, long n, long m)
 		break;
 	    }
     
-    long count = 0;
+    size_t count = 0;
     for (j = 0; j < m; j++)
         if (*(colCovered + j))
 	    count++;
@@ -433,9 +432,9 @@ boolean kuhn_isDone(byte** marks, boolean* colCovered, long n, long m)
  * @param   m           The table's width
  * @return              The row and column of the found print, <code>null</code> will be returned if none can be found
  */
-long* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCovered, long n, long m)
+ssize_t* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCovered, size_t n, size_t m)
 {
-    long i, j;
+    size_t i, j;
     BitSet zeroes = new_BitSet(n * m);
     
     for (i = 0; i < n; i++)
@@ -444,7 +443,8 @@ long* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCo
 	        if ((!*(colCovered + j)) && (*(*(t + i) + j) == 0))
 		  BitSet_set(zeroes, i * m + j);
     
-    long p, row, col;
+    ssize_t p;
+    size_t row, col;
     boolean markInRow;
     
     for (;;)
@@ -459,8 +459,8 @@ long* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCo
 	    return null;
 	}
 	
-	row = p / m;
-	col = p % m;
+	row = (size_t)p / m;
+	col = (size_t)p % m;
 	
 	*(*(marks + row) + col) = PRIME;
 	
@@ -527,9 +527,9 @@ long* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCo
  * @param  n          The table's height
  * @param  m          The table's width
  */
-void kuhn_altMarks(byte** marks, long* altRow, long* altCol, long* colMarks, long* rowPrimes, long* prime, long n, long m)
+void kuhn_altMarks(byte** marks, ssize_t* altRow, ssize_t* altCol, ssize_t* colMarks, ssize_t* rowPrimes, ssize_t* prime, size_t n, size_t m)
 {
-    long index = 0, i, j;
+    size_t index = 0, i, j;
     *altRow = *prime;
     *altCol = *(prime + 1);
     
@@ -544,11 +544,11 @@ void kuhn_altMarks(byte** marks, long* altRow, long* altCol, long* colMarks, lon
     for (i = 0; i < n; i++)
         for (j = 0; j < m; j++)
 	    if (*(*(marks + i) + j) == MARKED)
-	        *(colMarks + j) = i;
+	        *(colMarks + j) = (ssize_t)i;
 	    else if (*(*(marks + i) + j) == PRIME)
-	        *(rowPrimes + i) = j;
+	        *(rowPrimes + i) = (ssize_t)j;
     
-    long row, col;
+    ssize_t row, col;
     for (;;)
     {
         row = *(colMarks + *(altCol + index));
@@ -598,9 +598,9 @@ void kuhn_altMarks(byte** marks, long* altRow, long* altCol, long* colMarks, lon
  * @param  n           The table's height
  * @param  m           The table's width
  */
-void kuhn_addAndSubtract(cell** t, boolean* rowCovered, boolean* colCovered, long n, long m)
+void kuhn_addAndSubtract(cell** t, boolean* rowCovered, boolean* colCovered, size_t n, size_t m)
 {
-    long i, j;
+    size_t i, j;
     cell min = 0x7FFFffffL;
     for (i = 0; i < n; i++)
         if (!*(rowCovered + i))
@@ -627,19 +627,19 @@ void kuhn_addAndSubtract(cell** t, boolean* rowCovered, boolean* colCovered, lon
  * @param   m      The table's width
  * @return         The assignment, an array of row–coloumn pairs
  */
-long** kuhn_assign(byte** marks, long n, long m)
+ssize_t** kuhn_assign(byte** marks, size_t n, size_t m)
 {
-    long** assignment = new_arrays(n);
+    ssize_t** assignment = new_arrays(n);
     
-    long i, j;
+    size_t i, j;
     for (i = 0; i < n; i++)
     {
         *(assignment + i) = new_longs(2);
         for (j = 0; j < m; j++)
 	    if (*(*(marks + i) + j) == MARKED)
 	    {
-	        **(assignment + i) = i;
-		*(*(assignment + i) + 1) = j;
+		**(assignment + i) = (ssize_t)i;
+		*(*(assignment + i) + 1) = (ssize_t)j;
 	    }
     }
     
@@ -653,11 +653,11 @@ long** kuhn_assign(byte** marks, long n, long m)
  * @param   size  The (fixed) number of bits to bit set should contain
  * @return        The a unique BitSet instance with the specified size
  */
-BitSet new_BitSet(long size)
+BitSet new_BitSet(size_t size)
 {
     BitSet this;
     
-    long c = size >> 6L;
+    size_t c = size >> 6L;
     if (size & 63L)
         c++;
     
@@ -666,7 +666,7 @@ BitSet new_BitSet(long size)
     this.next = new_longs(c + 1L);
     *(this.first = new_longs(1)) = 0;
     
-    long i;
+    size_t i;
     for (i = 0; i < c; i++)
     {
         *(this.limbs + i) = 0LL;
@@ -683,9 +683,9 @@ BitSet new_BitSet(long size)
  * @param  this  The bit set
  * @param  i     The index of the bit to turn on
  */
-void BitSet_set(BitSet this, long i)
+void BitSet_set(BitSet this, size_t i)
 {
-    long j = i >> 6L;
+    size_t j = i >> 6L;
     llong old = *(this.limbs + j);
     
     *(this.limbs + j) |= 1LL << (llong)(i & 63L);
@@ -693,10 +693,10 @@ void BitSet_set(BitSet this, long i)
     if ((!*(this.limbs + j)) ^ (!old))
     {
         j++;
-	*(this.prev + *(this.first)) = j;
+	*(this.prev + *(this.first)) = (ssize_t)j;
 	*(this.prev + j) = 0;
 	*(this.next + j) = *(this.first);
-	*(this.first) = j;
+	*(this.first) = (ssize_t)j;
     }
 }
 
@@ -706,21 +706,21 @@ void BitSet_set(BitSet this, long i)
  * @param  this  The bit set
  * @param  i     The index of the bit to turn off
  */
-void BitSet_unset(BitSet this, long i)
+void BitSet_unset(BitSet this, size_t i)
 {
-    long j = i >> 6L;
+    size_t j = i >> 6L;
     llong old = *(this.limbs + j);
     
     *(this.limbs + j) &= ~(1LL << (llong)(i & 63L));
     
     if ((!*(this.limbs + j)) ^ (!old))
     {
-	j++;
-	long p = *(this.prev + j);
-	long n = *(this.next + j);
+        j++;
+	ssize_t p = *(this.prev + j);
+	ssize_t n = *(this.next + j);
 	*(this.prev + n) = p;
 	*(this.next + p) = n;
-	if (*(this.first) == j)
+	if (*(this.first) == (ssize_t)j)
 	    *(this.first) = n;
     }
 }
@@ -731,12 +731,12 @@ void BitSet_unset(BitSet this, long i)
  * @param   this  The bit set
  * @return        The index of any set bit
  */
-long BitSet_any(BitSet this)
+ssize_t BitSet_any(BitSet this)
 {
     if (*(this.first) == 0L)
         return -1;
     
-    long i = *(this.first) - 1L;
+    ssize_t i = *(this.first) - 1;
     return lb(*(this.limbs + i) & -*(this.limbs + i)) + (i << 6L);
 }
 
@@ -747,9 +747,9 @@ long BitSet_any(BitSet this)
  * @param   value  The integer whose logarithm to calculate
  * @return         The floored binary logarithm of the integer
  */
-long lb(llong value)
+ssize_t lb(llong value)
 {
-    long rc = 0L;
+    ssize_t rc = 0;
     llong v = value;
     
     if (v & (int_fast64_t)0xFFFFFFFF00000000LL)  {  rc |= 32L;  v >>= 32LL;  }
