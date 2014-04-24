@@ -3,7 +3,7 @@
 /**
  * 𝓞(n³) implementation of the Hungarian algorithm
  * 
- * Copyright (C) 2011  Mattias Andrée
+ * Copyright (C) 2011, 2014  Mattias Andrée
  * 
  * This program is free software. It comes without any warranty, to
  * the extent permitted by applicable law. You can redistribute it
@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 
 #ifndef RANDOM_DEVICE
@@ -25,9 +26,9 @@
 #define cell      long
 #define CELL_STR  "%li"
 
-#define llong    long long
-#define byte     char
-#define boolean  long
+#define llong    int_fast64_t
+#define byte     int_fast8_t
+#define boolean  int_fast8_t
 #define null     0
 #define true     1
 #define false    0
@@ -41,32 +42,32 @@
 #define new_booleans(X)  new_longs(X)
 
 //new byte[X]
-#define new_bytes(X)  malloc(X)
+#define new_bytes(X)  malloc((size_t)(X))
 
 //new llong[X]
-#define new_llongs(X)  malloc((X) << 3)
+#define new_llongs(X)  malloc((size_t)(X) << 3)
 
 //new long[X]
 #if !(defined __LP64__ || defined __LLP64__)
-   #define new_longs(X)  malloc((X) << 2) /*32-bit*/
+#  define new_longs(X)  malloc((size_t)(X) << 2) /*32-bit*/
 #else
-  #define new_longs(X)  malloc((X) << 3) /*64-bit*/
+#  define new_longs(X)  malloc((size_t)(X) << 3) /*64-bit*/
 #endif
 
 //new float[X]
-#define new_floats(X)  malloc((X) << 2)
+#define new_floats(X)  malloc((size_t)(X) << 2)
 
 //new double[X]
-#define new_doubles(X)  malloc((X) << 3)
+#define new_doubles(X)  malloc((size_t)(X) << 3)
 
 //new ?[][X]
 #define new_arrays(X)  new_longs(X)
 
 
 #ifdef DEBUG
-  #define debug(X) fprintf(stderr, "\e[31m%s\e[m\n", X)
+#  define debug(X) fprintf(stderr, "\033[31m%s\033[m\n", X)
 #else
-  #define debug(X) 
+#  define debug(X) 
 #endif
 
 
@@ -130,7 +131,7 @@ long** kuhn_assign(byte** marks, long n, long m);
 BitSet new_BitSet(long size);
 void BitSet_set(BitSet this, long i);
 void BitSet_unset(BitSet this, long i);
-long BitSet_any(BitSet this);
+long BitSet_any(BitSet this) __attribute__((pure));
 
 long lb(llong x) __attribute__((const));
 
@@ -138,7 +139,7 @@ long lb(llong x) __attribute__((const));
 
 void print(cell** t, long n, long m, long** assignment);
 
-int main(int argc, char** argv)
+int main(int argc, char** argv __attribute__((unused)))
 {
     FILE* urandom = fopen(RANDOM_DEVICE, "r");
     unsigned int seed;
@@ -224,8 +225,8 @@ void print(cell** t, long n, long m, long** assignment)
 	for (j = 0; j < m; j++)
 	{
 	    if (*(*(assigned + i) + j))
-		printf("\e[%lim", 30 + *(*(assigned + i) + j));
-	    printf("%5li%s\e[m   ", (cell)(*(*(t + i) + j)), (*(*(assigned + i) + j) ? "^" : " "));
+		printf("\033[%lim", 30 + *(*(assigned + i) + j));
+	    printf("%5li%s\033[m   ", (cell)(*(*(t + i) + j)), (*(*(assigned + i) + j) ? "^" : " "));
         }
 	printf("\n\n");
 	
@@ -751,12 +752,12 @@ long lb(llong value)
     long rc = 0L;
     llong v = value;
     
-    if (v & 0xFFFFFFFF00000000LL)  {  rc |= 32L;  v >>= 32LL;  }
-    if (v & 0x00000000FFFF0000LL)  {  rc |= 16L;  v >>= 16LL;  }
-    if (v & 0x000000000000FF00LL)  {  rc |=  8L;  v >>=  8LL;  }
-    if (v & 0x00000000000000F0LL)  {  rc |=  4L;  v >>=  4LL;  }
-    if (v & 0x000000000000000CLL)  {  rc |=  2L;  v >>=  2LL;  }
-    if (v & 0x0000000000000002LL)     rc |=  1L;
+    if (v & (int_fast64_t)0xFFFFFFFF00000000LL)  {  rc |= 32L;  v >>= 32LL;  }
+    if (v & (int_fast64_t)0x00000000FFFF0000LL)  {  rc |= 16L;  v >>= 16LL;  }
+    if (v & (int_fast64_t)0x000000000000FF00LL)  {  rc |=  8L;  v >>=  8LL;  }
+    if (v & (int_fast64_t)0x00000000000000F0LL)  {  rc |=  4L;  v >>=  4LL;  }
+    if (v & (int_fast64_t)0x000000000000000CLL)  {  rc |=  2L;  v >>=  2LL;  }
+    if (v & (int_fast64_t)0x0000000000000002LL)     rc |=  1L;
     
     return rc;
 }

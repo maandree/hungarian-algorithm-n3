@@ -15,7 +15,7 @@ WARN = -Wall -Wextra -pedantic -Wdouble-promotion -Wformat=2 -Winit-self -Wmissi
 all: hungarian
 
 hungarian: hungarian.c
-	gcc -std=c99 $(OPTIMISE) $(WARN) -o $@ $<
+	gcc -std=c99 $(OPTIMISE) $(WARN) $(CFLAGS) $(LDFLAGS) $(CPPFLAGS) -o $@ $<
 
 test:
 	./"hungarian"
