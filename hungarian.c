@@ -35,35 +35,6 @@
 
 
 
-//new cell[X]
-#define new_cells(X)  new_longs(X)
-
-//new boolean[X]
-#define new_booleans(X)  new_longs(X)
-
-//new byte[X]
-#define new_bytes(X)  malloc((size_t)(X))
-
-//new llong[X]
-#define new_llongs(X)  malloc((size_t)(X) << 3)
-
-//new long[X]
-#if !(defined __LP64__ || defined __LLP64__)
-#  define new_longs(X)  malloc((size_t)(X) << 2) /*32-bit*/
-#else
-#  define new_longs(X)  malloc((size_t)(X) << 3) /*64-bit*/
-#endif
-
-//new float[X]
-#define new_floats(X)  malloc((size_t)(X) << 2)
-
-//new double[X]
-#define new_doubles(X)  malloc((size_t)(X) << 3)
-
-//new ?[][X]
-#define new_arrays(X)  new_longs(X)
-
-
 #ifdef DEBUG
 #  define debug(X) fprintf(stderr, "\033[31m%s\033[m\n", X)
 #else
@@ -103,17 +74,17 @@ typedef struct
     /**
      * Singleton array with the index of the first non-zero limb
      */
-    ssize_t* first;
+    size_t* first;
     
     /**
      * Array the the index of the previous non-zero limb for each limb
      */
-    ssize_t* prev;
+    size_t* prev;
     
     /**
      * Array the the index of the next non-zero limb for each limb
      */
-    ssize_t* next;
+    size_t* next;
     
 } BitSet;
 
@@ -123,8 +94,8 @@ ssize_t** kuhn_match(cell** table, size_t n, size_t m);
 void kuhn_reduceRows(cell** t, size_t n, size_t m);
 byte** kuhn_mark(cell** t, size_t n, size_t m);
 boolean kuhn_isDone(byte** marks, boolean* colCovered, size_t n, size_t m);
-long* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCovered, size_t n, size_t m);
-void kuhn_altMarks(byte** marks, ssize_t* altRow, ssize_t* altCol, ssize_t* colMarks, ssize_t* rowPrimes, ssize_t* prime, size_t n, size_t m);
+size_t* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCovered, size_t n, size_t m);
+void kuhn_altMarks(byte** marks, size_t* altRow, size_t* altCol, ssize_t* colMarks, ssize_t* rowPrimes, size_t* prime, size_t n, size_t m);
 void kuhn_addAndSubtract(cell** t, boolean* rowCovered, boolean* colCovered, size_t n, size_t m);
 ssize_t** kuhn_assign(byte** marks, size_t n, size_t m);
 
@@ -133,13 +104,13 @@ void BitSet_set(BitSet this, size_t i);
 void BitSet_unset(BitSet this, size_t i);
 ssize_t BitSet_any(BitSet this) __attribute__((pure));
 
-ssize_t lb(llong x) __attribute__((const));
+size_t lb(llong x) __attribute__((const));
 
 
 
 void print(cell** t, size_t n, size_t m, long** assignment);
 
-int main(int argc, char** argv __attribute__((unused)))
+int main(int argc, char** argv)
 {
     FILE* urandom = fopen(RANDOM_DEVICE, "r");
     unsigned int seed;
@@ -148,30 +119,26 @@ int main(int argc, char** argv __attribute__((unused)))
     fclose(urandom);
     
     
-    size_t n = 10, m = 15;
-    
     size_t i, j;
-    cell** t = new_arrays(n);
-    cell** table = new_arrays(n);
-    if (argc < 2)
+    size_t n = argc < 3 ? 10 : (size_t)atol(*(argv + 1));
+    size_t m = argc < 3 ? 15 : (size_t)atol(*(argv + 2));
+    cell** t = malloc(n * sizeof(cell*));
+    cell** table = malloc(n * sizeof(cell*));
+    if (argc < 3)
         for (i = 0; i < n; i++)
 	{
-	    *(t + i) = new_llongs(m);
-	    *(table + i) = new_llongs(m);
+	    *(t + i) = malloc(m * sizeof(cell));
+	    *(table + i) = malloc(m * sizeof(cell));
 	    for (j = 0; j < m; j++)
 	        *(*(table + i) + j) = *(*(t + i) + j) = (cell)(random() & 63);
 	}
     else
     {
         cell x;
-	scanf("%lu", &n);
-	scanf("%lu", &m);
-        t = new_arrays(n);
-        table = new_arrays(n);
         for (i = 0; i < n; i++)
 	{
-	    *(t + i) = new_llongs(m);
-	    *(table + i) = new_llongs(m);
+	    *(t + i) = malloc(m * sizeof(cell));
+	    *(table + i) = malloc(m * sizeof(cell));
 	    for (j = 0; j < m; j++)
 	    {
 	        scanf(CELL_STR, &x);
@@ -207,10 +174,10 @@ void print(cell** t, size_t n, size_t m, ssize_t** assignment)
 {
     size_t i, j;
     
-    ssize_t** assigned = new_arrays(n);
+    ssize_t** assigned = malloc(n * sizeof(ssize_t*));
     for (i = 0; i < n; i++)
     {
-        *(assigned + i) = new_longs(m);
+        *(assigned + i) = malloc(m * sizeof(ssize_t));
 	for (j = 0; j < m; j++)
 	    *(*(assigned + i) + j) = 0;
     }
@@ -256,8 +223,8 @@ ssize_t** kuhn_match(cell** table, size_t n, size_t m)
     kuhn_reduceRows(table, n, m);
     byte** marks = kuhn_mark(table, n, m);
     
-    boolean* rowCovered = new_booleans(n);
-    boolean* colCovered = new_booleans(m);
+    boolean* rowCovered = malloc(n * sizeof(boolean));
+    boolean* colCovered = malloc(m * sizeof(boolean));
     for (i = 0; i < n; i++)
     {
         *(rowCovered + i) = false;
@@ -266,13 +233,13 @@ ssize_t** kuhn_match(cell** table, size_t n, size_t m)
     for (i = n; i < m; i++)
         *(colCovered + i) = false;
     
-    long* altRow = new_longs(n * m);
-    long* altCol = new_longs(n * m);
+    size_t* altRow = malloc(n * m * sizeof(ssize_t));
+    size_t* altCol = malloc(n * m * sizeof(ssize_t));
     
-    long* rowPrimes = new_longs(n);
-    long* colMarks  = new_longs(m);
+    ssize_t* rowPrimes = malloc(n * sizeof(ssize_t));
+    ssize_t* colMarks  = malloc(m * sizeof(ssize_t));
     
-    long* prime;
+    size_t* prime;
     
     for (;;)
     {
@@ -357,17 +324,17 @@ void kuhn_reduceRows(cell** t, size_t n, size_t m)
 byte** kuhn_mark(cell** t, size_t n, size_t m)
 {
     size_t i, j;
-    byte** marks = new_arrays(n);
+    byte** marks = malloc(n * sizeof(byte*));
     byte* marksi;
     for (i = 0; i < n; i++)
     {
-	marksi = *(marks + i) = new_bytes(m);
+      marksi = *(marks + i) = malloc(m * sizeof(byte));
         for (j = 0; j < m; j++)
  	    *(marksi + j) = UNMARKED;
     }
     
-    boolean* rowCovered = new_booleans(n);
-    boolean* colCovered = new_booleans(m);
+    boolean* rowCovered = malloc(n * sizeof(boolean));
+    boolean* colCovered = malloc(m * sizeof(boolean));
     for (i = 0; i < n; i++)
     {
         *(rowCovered + i) = false;
@@ -432,7 +399,7 @@ boolean kuhn_isDone(byte** marks, boolean* colCovered, size_t n, size_t m)
  * @param   m           The table's width
  * @return              The row and column of the found print, <code>null</code> will be returned if none can be found
  */
-ssize_t* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCovered, size_t n, size_t m)
+size_t* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* colCovered, size_t n, size_t m)
 {
     size_t i, j;
     BitSet zeroes = new_BitSet(n * m);
@@ -502,7 +469,7 @@ ssize_t* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* co
 	}
 	else
 	{
-	    long* rc = new_longs(2);
+	    size_t* rc = malloc(2 * sizeof(size_t));
 	    *rc = row;
 	    *(rc + 1) = col;
 	    free(zeroes.limbs);
@@ -527,7 +494,7 @@ ssize_t* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* co
  * @param  n          The table's height
  * @param  m          The table's width
  */
-void kuhn_altMarks(byte** marks, ssize_t* altRow, ssize_t* altCol, ssize_t* colMarks, ssize_t* rowPrimes, ssize_t* prime, size_t n, size_t m)
+void kuhn_altMarks(byte** marks, size_t* altRow, size_t* altCol, ssize_t* colMarks, ssize_t* rowPrimes, size_t* prime, size_t n, size_t m)
 {
     size_t index = 0, i, j;
     *altRow = *prime;
@@ -556,14 +523,14 @@ void kuhn_altMarks(byte** marks, ssize_t* altRow, ssize_t* altCol, ssize_t* colM
 	    break;
 	
 	index++;
-	*(altRow + index) = row;
+	*(altRow + index) = (size_t)row;
 	*(altCol + index) = *(altCol + index - 1);
 	
 	col = *(rowPrimes + *(altRow + index));
 	
 	index++;
 	*(altRow + index) = *(altRow + index - 1);
-	*(altCol + index) = col;
+	*(altCol + index) = (size_t)col;
     }
     
     byte* markx;
@@ -629,12 +596,12 @@ void kuhn_addAndSubtract(cell** t, boolean* rowCovered, boolean* colCovered, siz
  */
 ssize_t** kuhn_assign(byte** marks, size_t n, size_t m)
 {
-    ssize_t** assignment = new_arrays(n);
+    ssize_t** assignment = malloc(n * sizeof(ssize_t*));
     
     size_t i, j;
     for (i = 0; i < n; i++)
     {
-        *(assignment + i) = new_longs(2);
+        *(assignment + i) = malloc(2 * sizeof(ssize_t));
         for (j = 0; j < m; j++)
 	    if (*(*(marks + i) + j) == MARKED)
 	    {
@@ -661,10 +628,10 @@ BitSet new_BitSet(size_t size)
     if (size & 63L)
         c++;
     
-    this.limbs = new_llongs(c);
-    this.prev = new_longs(c + 1L);
-    this.next = new_longs(c + 1L);
-    *(this.first = new_longs(1)) = 0;
+    this.limbs = malloc(c * sizeof(llong));
+    this.prev = malloc((c + 1) * sizeof(long));
+    this.next = malloc((c + 1) * sizeof(long));
+    *(this.first = malloc(sizeof(long))) = 0;
     
     size_t i;
     for (i = 0; i < c; i++)
@@ -693,10 +660,10 @@ void BitSet_set(BitSet this, size_t i)
     if ((!*(this.limbs + j)) ^ (!old))
     {
         j++;
-	*(this.prev + *(this.first)) = (ssize_t)j;
+	*(this.prev + *(this.first)) = j;
 	*(this.prev + j) = 0;
 	*(this.next + j) = *(this.first);
-	*(this.first) = (ssize_t)j;
+	*(this.first) = j;
     }
 }
 
@@ -716,11 +683,11 @@ void BitSet_unset(BitSet this, size_t i)
     if ((!*(this.limbs + j)) ^ (!old))
     {
         j++;
-	ssize_t p = *(this.prev + j);
-	ssize_t n = *(this.next + j);
+	size_t p = *(this.prev + j);
+	size_t n = *(this.next + j);
 	*(this.prev + n) = p;
 	*(this.next + p) = n;
-	if (*(this.first) == (ssize_t)j)
+	if (*(this.first) == j)
 	    *(this.first) = n;
     }
 }
@@ -736,8 +703,8 @@ ssize_t BitSet_any(BitSet this)
     if (*(this.first) == 0L)
         return -1;
     
-    ssize_t i = *(this.first) - 1;
-    return lb(*(this.limbs + i) & -*(this.limbs + i)) + (i << 6L);
+    size_t i = *(this.first) - 1;
+    return (ssize_t)(lb(*(this.limbs + i) & -*(this.limbs + i)) + (i << 6L));
 }
 
 
@@ -747,9 +714,9 @@ ssize_t BitSet_any(BitSet this)
  * @param   value  The integer whose logarithm to calculate
  * @return         The floored binary logarithm of the integer
  */
-ssize_t lb(llong value)
+size_t lb(llong value)
 {
-    ssize_t rc = 0;
+    size_t rc = 0;
     llong v = value;
     
     if (v & (int_fast64_t)0xFFFFFFFF00000000LL)  {  rc |= 32L;  v >>= 32LL;  }
