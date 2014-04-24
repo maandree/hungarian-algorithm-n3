@@ -24,7 +24,7 @@ valgrind:
 	valgrind --tool=memcheck --leak-check=full ./"hungarian"
 
 clean:
-	-rm - hungarian
+	-rm hungarian
 
 
 .PHONY: all test valgrind clean
