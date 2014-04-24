@@ -69,7 +69,7 @@ typedef struct
     /**
      * The set of all limbs, a limb consist of 64 bits
      */
-    cell* limbs;
+    llong* limbs;
     
     /**
      * Singleton array with the index of the first non-zero limb
@@ -108,7 +108,7 @@ size_t lb(llong x) __attribute__((const));
 
 
 
-void print(cell** t, size_t n, size_t m, long** assignment);
+void print(cell** t, size_t n, size_t m, ssize_t** assignment);
 
 int main(int argc, char** argv)
 {
@@ -191,7 +191,7 @@ void print(cell** t, size_t n, size_t m, ssize_t** assignment)
 	for (j = 0; j < m; j++)
 	{
 	    if (*(*(assigned + i) + j))
-		printf("\033[%lim", 30 + *(*(assigned + i) + j));
+	      printf("\033[%im", (int)(30 + *(*(assigned + i) + j)));
 	    printf("%5li%s\033[m   ", (cell)(*(*(t + i) + j)), (*(*(assigned + i) + j) ? "^" : " "));
         }
 	printf("\n\n");
@@ -629,9 +629,9 @@ BitSet new_BitSet(size_t size)
         c++;
     
     this.limbs = malloc(c * sizeof(llong));
-    this.prev = malloc((c + 1) * sizeof(long));
-    this.next = malloc((c + 1) * sizeof(long));
-    *(this.first = malloc(sizeof(long))) = 0;
+    this.prev = malloc((c + 1) * sizeof(size_t));
+    this.next = malloc((c + 1) * sizeof(size_t));
+    *(this.first = malloc(sizeof(size_t))) = 0;
     
     size_t i;
     for (i = 0; i < c; i++)
