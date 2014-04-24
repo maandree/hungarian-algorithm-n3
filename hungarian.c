@@ -17,6 +17,11 @@
 #include <stdlib.h>
 
 
+#ifndef RANDOM_DEVICE
+#define RANDOM_DEVICE "/dev/urandom"
+#endif
+
+
 #define cell      long
 #define CELL_STR  "%li"
 
@@ -135,10 +140,11 @@ void print(cell** t, long n, long m, long** assignment);
 
 int main(int argc, char** argv)
 {
-    unsigned a, d;
-    __asm__("cpuid");
-    __asm__ __volatile__("rdtsc" : "=a" (a), "=d" (d));
-    srand(((llong)a) | (((llong)d) << 32LL));
+    FILE* urandom = fopen(RANDOM_DEVICE, "r");
+    unsigned int seed;
+    fread(&seed, sizeof(unsigned int), 1, urandom);
+    srand(seed);
+    fclose(urandom);
     
     
     long n = 10, m = 15;
