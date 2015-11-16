@@ -24,6 +24,7 @@ size_t* kuhn_findPrime(cell**, byte**, boolean*, boolean*, size_t, size_t);
 void kuhn_altMarks(byte**, size_t*, size_t*, ssize_t*, ssize_t*, size_t*, size_t, size_t);
 void kuhn_addAndSubtract(cell**, boolean*, boolean*, size_t, size_t);
 ssize_t** kuhn_assign(byte**, size_t, size_t);
+cell score_assignment(cell**, size_t, size_t);
 
 
 /**

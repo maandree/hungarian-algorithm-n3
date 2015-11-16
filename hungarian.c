@@ -52,7 +52,6 @@ int main(int argc, char** argv)
     srand(seed);
     fclose(urandom);
 
-
     size_t i, j;
     size_t n = argc < 3 ? 10 : (size_t)atol(*(argv + 1));
     size_t m = argc < 3 ? 15 : (size_t)atol(*(argv + 2));
@@ -60,25 +59,26 @@ int main(int argc, char** argv)
     cell** table = (cell**)malloc(n * sizeof(cell*));
     if (argc < 3)
         for (i = 0; i < n; i++)
-    {
-        *(t + i) = (cell*)malloc(m * sizeof(cell));
-        *(table + i) = (cell*)malloc(m * sizeof(cell));
-        for (j = 0; j < m; j++)
-            *(*(table + i) + j) = *(*(t + i) + j) = (cell)(random() & 63);
-    }
+        {
+            *(t + i) = (cell*)malloc(m * sizeof(cell));
+            *(table + i) = (cell*)malloc(m * sizeof(cell));
+            for (j = 0; j < m; j++) {
+                *(*(table + i) + j) = *(*(t + i) + j) = (cell)(random() & 63);
+            }
+        }
     else
     {
         cell x;
         for (i = 0; i < n; i++)
-    {
-        *(t + i) = (cell*)malloc(m * sizeof(cell));
-        *(table + i) = (cell*)malloc(m * sizeof(cell));
-        for (j = 0; j < m; j++)
         {
-            scanf(CELL_STR, &x);
-            *(*(table + i) + j) = *(*(t + i) + j) = x;
+            *(t + i) = (cell*)malloc(m * sizeof(cell));
+            *(table + i) = (cell*)malloc(m * sizeof(cell));
+            for (j = 0; j < m; j++)
+            {
+                scanf(CELL_STR, &x);
+                *(*(table + i) + j) = *(*(t + i) + j) = x;
+            }
         }
-    }
     }
 
     printf("\nInput:\n\n");
@@ -92,9 +92,9 @@ int main(int argc, char** argv)
     for (i = 0; i < n; i++)
     {
         sum += *(*(t + *(*(assignment + i) + 0)) + *(*(assignment + i) + 1));
-    free(*(assignment + i));
-    free(*(table + i));
-    free(*(t + i));
+        free(*(assignment + i));
+        free(*(table + i));
+        free(*(t + i));
     }
     free(assignment);
     free(table);
@@ -107,32 +107,34 @@ int main(int argc, char** argv)
 void print(cell** t, size_t n, size_t m, ssize_t** assignment)
 {
     size_t i, j;
-
-    ssize_t** assigned = malloc(n * sizeof(ssize_t*));
-    for (i = 0; i < n; i++)
-    {
-        *(assigned + i) = malloc(m * sizeof(ssize_t));
-    for (j = 0; j < m; j++)
-        *(*(assigned + i) + j) = 0;
-    }
-    if (assignment != null)
-        for (i = 0; i < n; i++)
-        (*(*(assigned + **(assignment + i)) + *(*(assignment + i) + 1)))++;
+    ssize_t** assigned = (ssize_t**)malloc(n * sizeof(ssize_t*));
 
     for (i = 0; i < n; i++)
     {
-    printf("    ");
-    for (j = 0; j < m; j++)
-    {
-        if (*(*(assigned + i) + j))
-          printf("\033[%im", (int)(30 + *(*(assigned + i) + j)));
-        printf("%5li%s\033[m   ", (cell)(*(*(t + i) + j)), (*(*(assigned + i) + j) ? "^" : " "));
+        *(assigned + i) = (ssize_t*)malloc(m * sizeof(ssize_t));
+        for (j = 0; j < m; j++) {
+            *(*(assigned + i) + j) = 0;
         }
-    printf("\n\n");
-
-    free(*(assigned + i));
+    }
+    if (assignment != null) {
+        for (i = 0; i < n; i++) {
+            (*(*(assigned + **(assignment + i)) + *(*(assignment + i) + 1)))++;
+        }
     }
 
+    for (i = 0; i < n; i++)
+    {
+        printf("    ");
+        for (j = 0; j < m; j++)
+        {
+            if (*(*(assigned + i) + j)) {
+                printf("\033[%im", (int)(30 + *(*(assigned + i) + j)));
+            }
+            printf("%5li%s\033[m   ", (cell)(*(*(t + i) + j)), (*(*(assigned + i) + j) ? "^" : " "));
+        }
+        printf("\n\n");
+        free(*(assigned + i));
+    }
     free(assigned);
 }
 
@@ -157,8 +159,8 @@ ssize_t** kuhn_match(cell** table, size_t n, size_t m)
     kuhn_reduceRows(table, n, m);
     byte** marks = kuhn_mark(table, n, m);
 
-    boolean* rowCovered = malloc(n * sizeof(boolean));
-    boolean* colCovered = malloc(m * sizeof(boolean));
+    boolean* rowCovered = (boolean*)malloc(n * sizeof(boolean));
+    boolean* colCovered = (boolean*)malloc(m * sizeof(boolean));
     for (i = 0; i < n; i++)
     {
         *(rowCovered + i) = false;
@@ -167,11 +169,11 @@ ssize_t** kuhn_match(cell** table, size_t n, size_t m)
     for (i = n; i < m; i++)
         *(colCovered + i) = false;
 
-    size_t* altRow = malloc(n * m * sizeof(ssize_t));
-    size_t* altCol = malloc(n * m * sizeof(ssize_t));
+    size_t* altRow = (size_t*)malloc(n * m * sizeof(ssize_t));
+    size_t* altCol = (size_t*)malloc(n * m * sizeof(ssize_t));
 
-    ssize_t* rowPrimes = malloc(n * sizeof(ssize_t));
-    ssize_t* colMarks  = malloc(m * sizeof(ssize_t));
+    ssize_t* rowPrimes = (ssize_t*)malloc(n * sizeof(ssize_t));
+    ssize_t* colMarks  = (ssize_t*)malloc(m * sizeof(ssize_t));
 
     size_t* prime;
 
@@ -258,17 +260,17 @@ void kuhn_reduceRows(cell** t, size_t n, size_t m)
 byte** kuhn_mark(cell** t, size_t n, size_t m)
 {
     size_t i, j;
-    byte** marks = malloc(n * sizeof(byte*));
+    byte** marks = (byte**)malloc(n * sizeof(byte*));
     byte* marksi;
     for (i = 0; i < n; i++)
     {
-      marksi = *(marks + i) = malloc(m * sizeof(byte));
+      marksi = *(marks + i) = (byte*)malloc(m * sizeof(byte));
         for (j = 0; j < m; j++)
          *(marksi + j) = UNMARKED;
     }
 
-    boolean* rowCovered = malloc(n * sizeof(boolean));
-    boolean* colCovered = malloc(m * sizeof(boolean));
+    boolean* rowCovered = (boolean*)malloc(n * sizeof(boolean));
+    boolean* colCovered = (boolean*)malloc(m * sizeof(boolean));
     for (i = 0; i < n; i++)
     {
         *(rowCovered + i) = false;
@@ -403,7 +405,7 @@ size_t* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* col
     }
     else
     {
-        size_t* rc = malloc(2 * sizeof(size_t));
+        size_t* rc = (size_t*)malloc(2 * sizeof(size_t));
         *rc = row;
         *(rc + 1) = col;
         free(zeroes.limbs);
@@ -428,7 +430,9 @@ size_t* kuhn_findPrime(cell** t, byte** marks, boolean* rowCovered, boolean* col
  * @param  n          The table's height
  * @param  m          The table's width
  */
-void kuhn_altMarks(byte** marks, size_t* altRow, size_t* altCol, ssize_t* colMarks, ssize_t* rowPrimes, size_t* prime, size_t n, size_t m)
+void kuhn_altMarks(byte** marks, size_t* altRow, size_t* altCol,
+        ssize_t* colMarks, ssize_t* rowPrimes, size_t* prime, size_t n,
+        size_t m)
 {
     size_t index = 0, i, j;
     *altRow = *prime;
@@ -530,12 +534,12 @@ void kuhn_addAndSubtract(cell** t, boolean* rowCovered, boolean* colCovered, siz
  */
 ssize_t** kuhn_assign(byte** marks, size_t n, size_t m)
 {
-    ssize_t** assignment = malloc(n * sizeof(ssize_t*));
+    ssize_t** assignment = (ssize_t**)malloc(n * sizeof(ssize_t*));
 
     size_t i, j;
     for (i = 0; i < n; i++)
     {
-        *(assignment + i) = malloc(2 * sizeof(ssize_t));
+        *(assignment + i) = (ssize_t*)malloc(2 * sizeof(ssize_t));
         for (j = 0; j < m; j++)
         if (*(*(marks + i) + j) == MARKED)
         {
@@ -556,89 +560,89 @@ ssize_t** kuhn_assign(byte** marks, size_t n, size_t m)
  */
 BitSet new_BitSet(size_t size)
 {
-    BitSet this;
+    BitSet given;
 
     size_t c = size >> 6L;
     if (size & 63L)
         c++;
 
-    this.limbs = malloc(c * sizeof(llong));
-    this.prev = malloc((c + 1) * sizeof(size_t));
-    this.next = malloc((c + 1) * sizeof(size_t));
-    *(this.first = malloc(sizeof(size_t))) = 0;
+    given.limbs = (llong*)malloc(c * sizeof(llong));
+    given.prev = (size_t*)malloc((c + 1) * sizeof(size_t));
+    given.next = (size_t*)malloc((c + 1) * sizeof(size_t));
+    *(given.first = (size_t*)malloc(sizeof(size_t))) = 0;
 
     size_t i;
     for (i = 0; i < c; i++)
     {
-        *(this.limbs + i) = 0LL;
-        *(this.prev + i) = *(this.next + i) = 0L;
+        *(given.limbs + i) = 0LL;
+        *(given.prev + i) = *(given.next + i) = 0L;
     }
-    *(this.prev + c) = *(this.next + c) = 0L;
+    *(given.prev + c) = *(given.next + c) = 0L;
 
-    return this;
+    return given;
 }
 
 /**
  * Turns on a bit in a bit set
  *
- * @param  this  The bit set
+ * @param  given  The bit set
  * @param  i     The index of the bit to turn on
  */
-void BitSet_set(BitSet this, size_t i)
+void BitSet_set(BitSet given, size_t i)
 {
     size_t j = i >> 6L;
-    llong old = *(this.limbs + j);
+    llong old = *(given.limbs + j);
 
-    *(this.limbs + j) |= 1LL << (llong)(i & 63L);
+    *(given.limbs + j) |= 1LL << (llong)(i & 63L);
 
-    if ((!*(this.limbs + j)) ^ (!old))
+    if ((!*(given.limbs + j)) ^ (!old))
     {
         j++;
-    *(this.prev + *(this.first)) = j;
-    *(this.prev + j) = 0;
-    *(this.next + j) = *(this.first);
-    *(this.first) = j;
+    *(given.prev + *(given.first)) = j;
+    *(given.prev + j) = 0;
+    *(given.next + j) = *(given.first);
+    *(given.first) = j;
     }
 }
 
 /**
  * Turns off a bit in a bit set
  *
- * @param  this  The bit set
+ * @param  given  The bit set
  * @param  i     The index of the bit to turn off
  */
-void BitSet_unset(BitSet this, size_t i)
+void BitSet_unset(BitSet given, size_t i)
 {
     size_t j = i >> 6L;
-    llong old = *(this.limbs + j);
+    llong old = *(given.limbs + j);
 
-    *(this.limbs + j) &= ~(1LL << (llong)(i & 63L));
+    *(given.limbs + j) &= ~(1LL << (llong)(i & 63L));
 
-    if ((!*(this.limbs + j)) ^ (!old))
+    if ((!*(given.limbs + j)) ^ (!old))
     {
         j++;
-    size_t p = *(this.prev + j);
-    size_t n = *(this.next + j);
-    *(this.prev + n) = p;
-    *(this.next + p) = n;
-    if (*(this.first) == j)
-        *(this.first) = n;
+    size_t p = *(given.prev + j);
+    size_t n = *(given.next + j);
+    *(given.prev + n) = p;
+    *(given.next + p) = n;
+    if (*(given.first) == j)
+        *(given.first) = n;
     }
 }
 
 /**
  * Gets the index of any set bit in a bit set
  *
- * @param   this  The bit set
+ * @param   given  The bit set
  * @return        The index of any set bit
  */
-ssize_t BitSet_any(BitSet this)
+ssize_t BitSet_any(BitSet given)
 {
-    if (*(this.first) == 0L)
+    if (*(given.first) == 0L)
         return -1;
 
-    size_t i = *(this.first) - 1;
-    return (ssize_t)(lb(*(this.limbs + i) & -*(this.limbs + i)) + (i << 6L));
+    size_t i = *(given.first) - 1;
+    return (ssize_t)(lb(*(given.limbs + i) & -*(given.limbs + i)) + (i << 6L));
 }
 
 
