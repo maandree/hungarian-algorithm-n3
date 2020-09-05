@@ -8,8 +8,7 @@ WARN = -Wall -Wextra -pedantic -Wdouble-promotion -Wformat=2 -Winit-self -Wmissi
        -Wunsuffixed-float-constants -Wsuggest-attribute=const -Wsuggest-attribute=noreturn       \
        -Wsuggest-attribute=pure -Wsuggest-attribute=format -Wnormalized=nfkc -Wconversion        \
        -fstrict-aliasing -fstrict-overflow -fipa-pure-const -ftree-vrp -fstack-usage             \
-        -funsafe-loop-optimizations
-# excluded: -Wdeclaration-after-statement
+       -funsafe-loop-optimizations  -Wdeclaration-after-statement
 
 
 all: hungarian
@@ -17,14 +16,11 @@ all: hungarian
 hungarian: hungarian.c
 	gcc -std=gnu99 $(OPTIMISE) $(WARN) $(CFLAGS) $(LDFLAGS) $(CPPFLAGS) -o $@ $<
 
-test:
-	./"hungarian"
-
-valgrind:
-	valgrind --tool=memcheck --leak-check=full ./"hungarian"
+test: hungarian
+	./hungarian
 
 clean:
-	-rm hungarian
+	-rm -f -- hungarian
 
 
 .PHONY: all test valgrind clean
