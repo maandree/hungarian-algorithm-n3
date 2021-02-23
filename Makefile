@@ -8,7 +8,7 @@ LDFLAGS  =
 all: hungarian
 
 hungarian: hungarian.c
-	gcc -o $@ $< $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
+	$(CC) -o $@ hungarian.c $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
 clean:
 	-rm -f -- hungarian
